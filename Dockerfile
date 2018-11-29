@@ -1,5 +1,4 @@
-# DESCRIPTION: Churnover Airflow container
-# BUILD: docker build --rm -t puckel/docker-airflow .
+# DESCRIPTION: Airflow container
 
 FROM python:3.6-slim
 
@@ -13,10 +12,10 @@ ARG AIRFLOW_HOME=/usr/local/airflow
 ARG AIRFLOW_DEPS=""
 ARG PYTHON_DEPS=""
 ENV AIRFLOW_GPL_UNIDECODE yes
-
+ENV AIRFLOW_HOME=${AIRFLOW_HOME}
 
 # Set proper python path for application to resolve dependencies
-ENV PYTHONPATH=/usr/local/airflow/churnover
+ENV PYTHONPATH=/usr/local/airflow/
 
 # Define en_US.
 ENV LANGUAGE en_US.UTF-8
@@ -73,11 +72,7 @@ RUN set -ex \
         /usr/share/doc \
         /usr/share/doc-base
 
-# Create virtualenv for churnover
 WORKDIR ${AIRFLOW_HOME}
-RUN virtualenv venv
-RUN chmod +x venv/bin/activate
-RUN ./venv/bin/activate
 
 # Copy configurations
 COPY scripts/entrypoint.sh /entrypoint.sh
@@ -87,12 +82,12 @@ COPY airflow/airflow.cfg ${AIRFLOW_HOME}/airflow.cfg
 RUN mkdir ${AIRFLOW_HOME}/dags
 COPY airflow/dags ${AIRFLOW_HOME}/dags/
 
-# Copy churnover requirements first and install to speed up docker image generation
+# Copy app requirements first and install to speed up docker image generation
 COPY app/requirements.txt ${AIRFLOW_HOME}/app/requirements.txt
 WORKDIR ${AIRFLOW_HOME}/app
 RUN pip install -r requirements.txt
 
-# Copy churnover code and set access permissions
+# Copy app code and set access permissions
 COPY app ${AIRFLOW_HOME}/app
 RUN chown -R airflow: ${AIRFLOW_HOME}
 
