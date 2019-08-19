@@ -1,7 +1,6 @@
 from airflow import DAG
 from airflow.operators.bash_operator import BashOperator
 from datetime import datetime, timedelta
-from app import read_numbers_file
 
 # Default arguments - These get passed into every task in the DAG
 default_args = {
@@ -19,11 +18,13 @@ default_args = {
 }
 
 # Initialize the DAG
-dag = DAG(dag_id="write_read_file", default_args=default_args, schedule_interval='@once')
+dag = DAG(dag_id="write_read_file_bash", default_args=default_args, schedule_interval="@once")
 
 # Bash commands that will be executed in the tasks
 write_file_command = "python $AIRFLOW_HOME/app/write_numbers_file.py"
-read_file_command = "python $AIRFLOW_HOME/app/read_numbers_file.py --file_name=$AIRFLOW_HOME/{{ var.value.output_file }}"
+read_file_command = (
+    "python $AIRFLOW_HOME/app/read_numbers_file.py --file_name=$AIRFLOW_HOME/{{ var.value.output_file }}"
+)
 
 # t1, t2 are tasks tasks created by instantiating operators
 t1 = BashOperator(task_id="write_numbers_file", bash_command=write_file_command, dag=dag)
